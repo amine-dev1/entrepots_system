@@ -1,0 +1,25 @@
+# Frontend - React + Vite
+# Prerequisites
+node >= 24 (installed: 24.16.0)
+npm >= 11
+
+# Dependencies (see package.json for full list)
+react ^19.2.6
+react-dom ^19.2.6
+axios ^1.16.1
+tailwindcss ^4.3.0
+@tailwindcss/vite ^4.3.0
+
+# Dev dependencies
+vite ^8.0.12
+@vitejs/plugin-react ^6.0.1
+eslint ^10.3.0
+
+# Install
+# npm install
+
+# Run
+# npm run dev
+
+# Build
+# npm run build
