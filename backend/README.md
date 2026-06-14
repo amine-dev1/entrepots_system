@@ -51,12 +51,16 @@ php artisan serve --port=8000
 | GET     | `/health`  | Vérifie la connexion à la base       |
 
 ### Authentification (Sanctum)
-| Méthode | Route            | Auth          | Description                          |
-|---------|------------------|---------------|--------------------------------------|
-| POST    | `/api/register`  | —             | Crée un utilisateur, retourne un token |
-| POST    | `/api/login`     | —             | Vérifie les identifiants, retourne un token |
-| GET     | `/api/user`      | `auth:sanctum`| Retourne l'utilisateur authentifié   |
-| POST    | `/api/logout`    | `auth:sanctum`| Révoque le token courant             |
+
+> Toutes les routes sont préfixées par **`/api/v1`** (conception §4.2).
+
+| Méthode | Route               | Auth          | Description                                  |
+|---------|---------------------|---------------|----------------------------------------------|
+| POST    | `/api/v1/register`  | —             | Crée un utilisateur, retourne un token       |
+| POST    | `/api/v1/login`     | —             | Vérifie les identifiants, retourne un token  |
+| GET     | `/api/v1/me`        | `auth:sanctum`| Utilisateur authentifié + rôles + permissions |
+| GET     | `/api/v1/user`      | `auth:sanctum`| Retourne l'utilisateur authentifié           |
+| POST    | `/api/v1/logout`    | `auth:sanctum`| Révoque le token courant                     |
 
 Les routes protégées attendent l'en-tête : `Authorization: Bearer <token>`.
 
@@ -64,13 +68,31 @@ Les routes protégées attendent l'en-tête : `Authorization: Bearer <token>`.
 
 ```bash
 # Register
-curl -X POST http://127.0.0.1:8000/api/register \
+curl -X POST http://127.0.0.1:8000/api/v1/register \
   -H "Content-Type: application/json" \
   -d '{"nom":"Test","prenom":"User","email":"test@example.com","password":"password123","password_confirmation":"password123"}'
 
-# Accès protégé
-curl http://127.0.0.1:8000/api/user -H "Authorization: Bearer <token>"
+# Login puis accès protégé
+curl -X POST http://127.0.0.1:8000/api/v1/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@stockflow.ma","password":"password"}'
+
+curl http://127.0.0.1:8000/api/v1/me -H "Authorization: Bearer <token>"
 ```
+
+### Middleware de rôles
+
+Les routes peuvent être protégées par rôle via les alias enregistrés dans
+`bootstrap/app.php` :
+
+| Alias                  | Source              | Exemple d'usage                              |
+|------------------------|---------------------|----------------------------------------------|
+| `checkrole`            | `App\Http\Middleware\CheckRole` | `->middleware('checkrole:administrateur')` |
+| `role`                 | Spatie              | `->middleware('role:gestionnaire')`          |
+| `permission`           | Spatie              | `->middleware('permission:export')`          |
+| `role_or_permission`   | Spatie              | `->middleware('role_or_permission:...')`     |
+
+Un rôle insuffisant renvoie **403**, une requête non authentifiée **401**.
 
 ## Modèles de données (Gestion des stocks)
 
@@ -136,11 +158,33 @@ Le `DemoSeeder` crée un utilisateur par rôle (mot de passe : `password`) :
 | `gestionnaire@stockflow.ma` | `gestionnaire`   |
 | `magasinier@stockflow.ma`   | `magasinier`     |
 
+## Services métier (logique critique)
+
+Toute règle de gestion passe par une couche de **services** en transactions atomiques
+(conception §3). Les contrôleurs délèguent à ces services.
+
+| Service            | Rôle                                                                                   |
+|--------------------|----------------------------------------------------------------------------------------|
+| `StockService`     | `createMovement()` — tout mouvement de stock en `DB::transaction` + `lockForUpdate` (verrou pessimiste), contrôle du disponible (`InsufficientStockException`), référence auto `MVT-AAAA-NNNNNN`, événement `StockLow` au seuil. `adjustReserve()` pour les réservations. |
+| `TransferService`  | Machine à états `brouillon → en_attente → valide → recu \| annule` (`submit/validate/receive/cancel`). Double mouvement : sortie source à la validation (+ réserve dest), entrée dest à la réception (réserve libérée), ré-entrée source si annulation après validation. |
+| `InventoryService` | `open()` (snapshot `qte_theorique`), `recordCount()`, `close()`, `adjust()` — génère les mouvements d'écart (`ajustement_entree`/`ajustement_sortie`). |
+
+Composants associés :
+
+- `app/Enums/MovementType.php` — 9 types de mouvement + `isSortie()`
+- `app/Enums/TransferStatus.php` — états + transitions autorisées
+- `app/Events/StockLow.php` — émis quand `disponible <= stock_minimum`
+- `app/Exceptions/InsufficientStockException.php`
+- `app/Support/Ref.php` — génération des références séquentielles (`MVT-`, `TRF-`)
+
 ## Structure
 
-- `app/Http/Controllers/AuthController.php` — logique d'authentification
-- `app/Models/User.php` — modèle User (trait `HasApiTokens`, `HasRoles`)
+- `app/Http/Controllers/AuthController.php` — authentification (`login`/`logout`/`me`/`register`)
+- `app/Http/Middleware/CheckRole.php` — contrôle de rôle (403 si insuffisant)
+- `app/Models/User.php` — modèle User (traits `HasApiTokens`, `HasRoles`, `HasUuids`)
 - `app/Models/` — modèles du domaine (entrepôts, produits, stocks, transferts, inventaires)
-- `routes/api.php` — routes API
+- `app/Services/` — `StockService`, `TransferService`, `InventoryService`
+- `app/Enums/`, `app/Events/`, `app/Exceptions/`, `app/Support/`
+- `routes/api.php` — routes API (préfixe `/api/v1`)
 - `routes/web.php` — route `/health`
 - `database/seeders/` — `RolePermissionSeeder`, `DemoSeeder`

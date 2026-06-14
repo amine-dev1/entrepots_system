@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignUuid('product_id')->constrained('products');
             $table->integer('qte_theorique');
             $table->integer('qte_reelle')->nullable();
-            $table->integer('ecart')->storedAs('qte_reelle - qte_theorique');
+            $table->integer('ecart')->storedAs('qte_reelle - qte_theorique')->nullable();
             $table->unique(['inventory_id', 'product_id']);
             $table->timestamps();
 
