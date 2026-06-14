@@ -28,6 +28,7 @@ return new class extends Migration
             $table->text('note')->nullable();
             $table->timestamps();
 
+            $table->check('source_warehouse_id <> dest_warehouse_id');
         });
     }
 

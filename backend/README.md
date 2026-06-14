@@ -32,6 +32,11 @@ DB_PASSWORD=<password>
 DB_SSLMODE=require
 ```
 
+> **Neon — endpoint direct vs pooler :** utiliser l'hôte **direct** (sans `-pooler`)
+> pour `php artisan migrate` et l'API. L'endpoint `-pooler` (PgBouncer) met en cache
+> les plans de requêtes préparées et provoque des erreurs après un changement de schéma
+> (`invalid input syntax for type bigint`) ainsi que des échecs de transaction DDL.
+
 ## Lancer le serveur
 
 ```bash
@@ -61,7 +66,7 @@ Les routes protégées attendent l'en-tête : `Authorization: Bearer <token>`.
 # Register
 curl -X POST http://127.0.0.1:8000/api/register \
   -H "Content-Type: application/json" \
-  -d '{"name":"Test","email":"test@example.com","password":"password123","password_confirmation":"password123"}'
+  -d '{"nom":"Test","prenom":"User","email":"test@example.com","password":"password123","password_confirmation":"password123"}'
 
 # Accès protégé
 curl http://127.0.0.1:8000/api/user -H "Authorization: Bearer <token>"
