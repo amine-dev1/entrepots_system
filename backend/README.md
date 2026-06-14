@@ -67,9 +67,75 @@ curl -X POST http://127.0.0.1:8000/api/register \
 curl http://127.0.0.1:8000/api/user -H "Authorization: Bearer <token>"
 ```
 
+## Modèles de données (Gestion des stocks)
+
+Le schéma couvre la gestion multi-entrepôts :
+
+| Modèle          | Table              | Description                                 |
+|-----------------|--------------------|----------------------------------------------|
+| `Warehouse`     | `warehouses`       | Entrepôts (nom, code, adresse, responsable) |
+| `Category`      | `categories`       | Catégories de produits                      |
+| `Product`       | `products`         | Catalogue produits                          |
+| `Stock`         | `stocks`           | Quantités en stock par entrepôt/produit     |
+| `StockMovement` | `stock_movements`  | Historique des mouvements de stock          |
+| `Transfer`      | `transfers`        | Transferts inter-entrepôts                  |
+| `TransferItem`  | `transfer_items`   | Lignes de transfert                         |
+| `Inventory`     | `inventories`      | Inventaires (sessions de comptage)          |
+| `InventoryItem` | `inventory_items`  | Lignes d'inventaire                         |
+
+Les migrations correspondantes sont dans `database/migrations/`.
+
+### Seeders
+
+```bash
+php artisan migrate
+php artisan db:seed
+```
+
+- `RolePermissionSeeder` — crée les rôles et permissions (voir [Rôles & Permissions](#rôles--permissions-spatie-laravel-permission))
+- `DemoSeeder` — crée des utilisateurs, entrepôts, catégories, produits et stocks de démonstration
+
+## Rôles & Permissions (Spatie laravel-permission)
+
+La gestion des rôles/permissions utilise le package [`spatie/laravel-permission`](https://spatie.be/docs/laravel-permission).
+
+### Installation
+
+```bash
+composer require spatie/laravel-permission
+php artisan migrate
+```
+
+> La configuration (`config/permission.php`) et la migration des tables de permissions sont déjà présentes dans le projet — seul le package Composer doit être installé.
+
+### Rôles seedés
+
+| Rôle             | Permissions principales                                                        |
+|------------------|----------------------------------------------------------------------------------|
+| `administrateur` | Toutes les permissions                                                          |
+| `gestionnaire`   | dashboard, rapports, export, validation/annulation transferts, ajustement inventaires |
+| `magasinier`     | mouvements de stock, création/réception transferts, mise à jour inventaires    |
+| `auditeur`       | activité, rapports, export, dashboard                                          |
+
+```bash
+php artisan db:seed --class=RolePermissionSeeder
+```
+
+### Utilisateurs de démonstration
+
+Le `DemoSeeder` crée un utilisateur par rôle (mot de passe : `password`) :
+
+| Email                      | Rôle             |
+|-----------------------------|------------------|
+| `admin@stockflow.ma`        | `administrateur` |
+| `gestionnaire@stockflow.ma` | `gestionnaire`   |
+| `magasinier@stockflow.ma`   | `magasinier`     |
+
 ## Structure
 
 - `app/Http/Controllers/AuthController.php` — logique d'authentification
-- `app/Models/User.php` — modèle User (trait `HasApiTokens`)
+- `app/Models/User.php` — modèle User (trait `HasApiTokens`, `HasRoles`)
+- `app/Models/` — modèles du domaine (entrepôts, produits, stocks, transferts, inventaires)
 - `routes/api.php` — routes API
 - `routes/web.php` — route `/health`
+- `database/seeders/` — `RolePermissionSeeder`, `DemoSeeder`
