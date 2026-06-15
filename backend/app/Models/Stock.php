@@ -41,8 +41,9 @@ class Stock extends Model
     // Scope — stocks en alerte (disponible ≤ stock_minimum du produit)
     public function scopeEnAlerte($query)
     {
-        return $query->whereColumn('disponible', '<=', 'products.stock_minimum')
-                 ->join('products', 'stocks.product_id', '=', 'products.id');
+        return $query->join('products', 'stocks.product_id', '=', 'products.id')
+                     ->whereColumn('stocks.disponible', '<=', 'products.stock_minimum')
+                     ->select('stocks.*');
     }
 
     // Scope — filtrer par entrepôt

@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -27,9 +28,10 @@ return new class extends Migration
             $table->timestamp('received_at')->nullable();
             $table->text('note')->nullable();
             $table->timestamps();
-
-            
         });
+
+        // Empêche un transfert d'un entrepôt vers lui-même (CHECK portable, raw SQL).
+        DB::statement('ALTER TABLE transfers ADD CONSTRAINT transfers_source_dest_diff CHECK (source_warehouse_id <> dest_warehouse_id)');
     }
 
     /**
