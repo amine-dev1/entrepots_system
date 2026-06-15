@@ -37,4 +37,17 @@ class Stock extends Model
     {
         return $this->hasMany(StockMovement::class, 'product_id', 'product_id');
     }
+
+    // Scope — stocks en alerte (disponible ≤ stock_minimum du produit)
+    public function scopeEnAlerte($query)
+    {
+        return $query->whereColumn('disponible', '<=', 'products.stock_minimum')
+                 ->join('products', 'stocks.product_id', '=', 'products.id');
+    }
+
+    // Scope — filtrer par entrepôt
+    public function scopeParEntrepot($query, $warehouseId)
+    {
+        return $query->where('warehouse_id', $warehouseId);
+    }
 }

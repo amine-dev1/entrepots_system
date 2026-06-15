@@ -42,4 +42,11 @@ class Warehouse extends Model
     {
         return $this->hasMany(Inventory::class);
     }
+
+
+    // Scope — entrepôts actifs seulement
+    public function scopeActif($query)
+    {
+        return $query->where('actif', true);
+    }
 }
