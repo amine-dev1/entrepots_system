@@ -1,0 +1,38 @@
+# Normalize line endings across all platforms.
+# Text files are stored as LF in the repo; Git checks them out
+# with the platform's native endings.
+* text=auto eol=lf
+
+# Explicit text types (PHP/JS/TS/CSS/config) -> LF
+*.php   text eol=lf
+*.js    text eol=lf
+*.jsx   text eol=lf
+*.ts    text eol=lf
+*.tsx   text eol=lf
+*.json  text eol=lf
+*.css   text eol=lf
+*.scss  text eol=lf
+*.html  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.xml   text eol=lf
+*.env   text eol=lf
+*.sh    text eol=lf
+
+# Windows-only scripts must keep CRLF
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# Binary files: never touch
+*.pdf   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary
