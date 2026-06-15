@@ -48,4 +48,16 @@ class StockMovement extends Model
     {
         return $this->belongsTo(Transfer::class);
     }
+
+    // Scope — filtrer par type
+    public function scopeParType($query, $type)
+    {
+        return $query->where('type', $type);
+    }
+
+    // Scope — filtrer par période
+    public function scopeParPeriode($query, $debut, $fin)
+    {
+       return $query->whereBetween('created_at', [$debut, $fin]);
+    }
 }

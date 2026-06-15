@@ -44,4 +44,10 @@ class Product extends Model
     {
         return $this->hasMany(StockMovement::class);
     }
+
+    // Scope — produits actifs seulement
+    public function scopeActif($query)
+    {
+    return $query->where('actif', true);
+    }
 }

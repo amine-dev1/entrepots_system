@@ -62,4 +62,10 @@ class Transfer extends Model
     {
         return $this->hasMany(StockMovement::class);
     }
+
+    // Scope — filtrer par statut
+    public function scopeParStatut($query, $statut)
+    {
+       return $query->where('statut', $statut);
+    }
 }
