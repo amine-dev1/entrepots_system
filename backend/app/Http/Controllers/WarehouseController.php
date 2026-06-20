@@ -7,10 +7,12 @@ use Illuminate\Http\Request;
 
 class WarehouseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $warehouses = Warehouse::all();
-        return response()->json($warehouses);
+        // Actifs seulement par défaut ; ?inactifs=true pour tout voir (admin).
+        $query = $request->boolean('inactifs') ? Warehouse::query() : Warehouse::actif();
+
+        return response()->json($query->get());
     }
 
 
@@ -43,6 +45,7 @@ class WarehouseController extends Controller
             'adresse'     => 'nullable|string',
             'responsable' => 'nullable|string|max:150',
             'telephone'   => 'nullable|string|max:20',
+            'actif'       => 'sometimes|boolean',
         ]);
 
         $warehouse->update($data);

@@ -9,10 +9,12 @@ use Illuminate\Support\Facades\Storage;
 class ProductController extends Controller
 {
     // GET /api/v1/products
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with('category')->get();
-        return response()->json($products);
+        // Actifs seulement par défaut ; ?inactifs=true pour tout voir (admin).
+        $query = $request->boolean('inactifs') ? Product::query() : Product::actif();
+
+        return response()->json($query->with('category')->get());
     }
 
     // GET /api/v1/products/{id}
@@ -59,6 +61,7 @@ class ProductController extends Controller
             'prix_vente'    => 'sometimes|numeric|min:0',
             'stock_minimum' => 'sometimes|integer|min:0',
             'image'         => 'nullable|image|max:2048',
+            'actif'         => 'sometimes|boolean',
         ]);
 
         // Remplace l'ancienne image
