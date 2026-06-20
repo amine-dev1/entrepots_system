@@ -80,6 +80,13 @@ const products = await listProducts()  // token injecté automatiquement
 Le token est conservé dans `localStorage` (`stockflow_token`) et ré-injecté
 automatiquement par l'intercepteur. Un `401` purge le token et renvoie vers `/login`.
 
-> `src/App.jsx` contient une **page de démonstration** de la connexion (login →
-> `/me` → listes produits/entrepôts). À remplacer par le routeur (`routes/` +
-> `features/`) lors de l'implémentation des écrans.
+### État actuel
+
+Seule la **couche d'appels API** est en place (`src/api`, `src/contexts/AuthContext`,
+`src/lib`) ; elle a été testée de bout en bout (login → `/me` → ressources protégées).
+L'interface de démonstration a été retirée : `src/App.jsx` est un **stub minimal**
+(`return null`) et `main.jsx` enveloppe l'app dans `<AuthProvider>`.
+
+À implémenter par l'équipe par-dessus cette couche : le routeur (`src/routes/` avec
+`createBrowserRouter` + `ProtectedRoute`) et les écrans (`src/features/` : auth,
+dashboard, products, warehouses, etc.), conformément à la conception §4.1.
