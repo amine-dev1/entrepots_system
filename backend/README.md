@@ -18,7 +18,12 @@ composer install
 cp .env.example .env        # puis renseigner les variables DB_*
 php artisan key:generate
 php artisan migrate
+php artisan storage:link     # requis pour les images produits (disque "public")
 ```
+
+> **`storage:link` :** `ProductController` enregistre les images sur le disque
+> `public` (`storage/app/public/products`). Sans ce lien symbolique, les images
+> uploadées ne seront pas accessibles via `/storage/...`. À exécuter une seule fois.
 
 ### Configuration base de données (.env)
 
@@ -79,6 +84,56 @@ curl -X POST http://127.0.0.1:8000/api/v1/login \
 
 curl http://127.0.0.1:8000/api/v1/me -H "Authorization: Bearer <token>"
 ```
+
+### Ressources CRUD
+
+> Toutes ces routes sont sous **`/api/v1`** et requièrent `auth:sanctum`.
+> Les routes de **lecture** (`GET`) sont accessibles à tout utilisateur authentifié ;
+> les routes d'**écriture** sont protégées par rôle (colonne « Rôle »).
+
+#### Utilisateurs (`administrateur` uniquement)
+
+| Méthode | Route                       | Description                                   |
+|---------|-----------------------------|-----------------------------------------------|
+| GET     | `/users`                    | Liste des utilisateurs (avec rôles)           |
+| POST    | `/users`                    | Crée un utilisateur (`role` optionnel)        |
+| GET     | `/users/{user}`             | Détail d'un utilisateur                       |
+| PUT     | `/users/{user}`             | Met à jour (peut changer le `role`)           |
+| POST    | `/users/{user}/toggle`      | Active / désactive le compte                  |
+
+#### Entrepôts (écriture : `administrateur`)
+
+| Méthode | Route                       | Description                                   |
+|---------|-----------------------------|-----------------------------------------------|
+| GET     | `/warehouses`               | Liste (actifs ; `?inactifs=true` pour tout)   |
+| GET     | `/warehouses/{warehouse}`   | Détail d'un entrepôt                          |
+| POST    | `/warehouses`               | Crée un entrepôt                              |
+| PUT     | `/warehouses/{warehouse}`   | Met à jour (champ `actif` pour réactiver)     |
+| DELETE  | `/warehouses/{warehouse}`   | Désactive (refusé **422** si stock > 0)       |
+
+#### Catégories (écriture : `gestionnaire`, `administrateur`)
+
+| Méthode | Route                       | Description                                   |
+|---------|-----------------------------|-----------------------------------------------|
+| GET     | `/categories`               | Liste (avec `products_count`)                 |
+| GET     | `/categories/{category}`    | Détail d'une catégorie                        |
+| POST    | `/categories`               | Crée une catégorie                            |
+| PUT     | `/categories/{category}`    | Met à jour                                    |
+| DELETE  | `/categories/{category}`    | Supprime (refusé **422** si produits liés)    |
+
+#### Produits (écriture : `gestionnaire`, `administrateur`)
+
+| Méthode | Route                       | Description                                       |
+|---------|-----------------------------|---------------------------------------------------|
+| GET     | `/products`                 | Liste (actifs ; `?inactifs=true` pour tout)       |
+| GET     | `/products/{product}`       | Détail (avec catégorie)                           |
+| POST    | `/products`                 | Crée un produit (`multipart/form-data` si `image`)|
+| POST    | `/products/{product}`       | Met à jour (POST car `multipart` ne gère pas PUT) |
+| DELETE  | `/products/{product}`       | Désactive (`actif = false`)                       |
+
+> **Soft-delete :** `DELETE` sur un produit/entrepôt passe `actif` à `false` et le
+> retire des listes par défaut. Pour le réafficher : `?inactifs=true` (lecture) ou
+> `actif: true` (mise à jour). Aucune suppression physique.
 
 ### Middleware de rôles
 
