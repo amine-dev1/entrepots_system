@@ -39,15 +39,47 @@ npm run preview    # prévisualise le build
 
 ## Connexion à l'API
 
-Le backend (Laravel + Sanctum) expose une API sur `http://127.0.0.1:8000/api`.
-L'authentification se fait par token : après `login`/`register`, stocker le token
-et l'envoyer dans l'en-tête `Authorization: Bearer <token>`.
+La couche API suit la conception §4.1. L'URL de base est lue depuis `VITE_API_URL`
+(voir `.env`), par défaut `http://localhost:8000/api/v1`.
 
-```js
-import axios from 'axios'
-
-const api = axios.create({ baseURL: 'http://127.0.0.1:8000/api' })
-
-// après login
-api.defaults.headers.common['Authorization'] = `Bearer ${token}`
 ```
+src/
+├── api/
+│   ├── axios.js            # instance Axios + intercepteur token Bearer + gestion 401
+│   ├── auth.api.js         # login / register / logout / me
+│   ├── users.api.js        # CRUD utilisateurs + toggle
+│   ├── warehouses.api.js   # CRUD entrepôts (param ?inactifs)
+│   ├── categories.api.js   # CRUD catégories
+│   └── products.api.js     # CRUD produits (FormData pour l'image)
+├── contexts/AuthContext.jsx  # user + token + rôles/permissions, hook useAuth
+└── lib/utils.js              # formatDate, formatMoney, cn
+```
+
+### Configuration
+
+```bash
+cp .env.example .env     # ajuster VITE_API_URL si le backend n'est pas en local
+```
+
+> **CORS :** le backend autorise par défaut `http://localhost:5173` et
+> `http://127.0.0.1:5173` (voir `backend/config/cors.php`, variable
+> `CORS_ALLOWED_ORIGINS`). L'auth se fait par token Bearer (pas de cookies).
+
+### Utilisation
+
+```jsx
+import { useAuth } from './contexts/AuthContext'
+import { listProducts } from './api/products.api'
+
+const { user, roles, login, logout, isAuthenticated } = useAuth()
+
+await login({ email, password })   // stocke le token + charge /me
+const products = await listProducts()  // token injecté automatiquement
+```
+
+Le token est conservé dans `localStorage` (`stockflow_token`) et ré-injecté
+automatiquement par l'intercepteur. Un `401` purge le token et renvoie vers `/login`.
+
+> `src/App.jsx` contient une **page de démonstration** de la connexion (login →
+> `/me` → listes produits/entrepôts). À remplacer par le routeur (`routes/` +
+> `features/`) lors de l'implémentation des écrans.
