@@ -20,5 +20,19 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Business-rule violations from the service layer → 422 (Unprocessable).
+        // Covers InsufficientStockException, invalid transfer transitions and
+        // invalid inventory state changes (all thrown as RuntimeException),
+        // plus InvalidArgumentException (e.g. non-positive quantity).
+        $exceptions->render(function (\RuntimeException $e, $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+        });
+
+        $exceptions->render(function (\InvalidArgumentException $e, $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+        });
     })->create();
