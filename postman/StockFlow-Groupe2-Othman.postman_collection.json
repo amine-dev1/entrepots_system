@@ -1,0 +1,450 @@
+{
+  "info": {
+    "name": "StockFlow — Groupe 2 (Othman)",
+    "description": "Tests des endpoints du groupe 2 : stocks, mouvements, transferts, inventaires, dashboard, rapports. Utilise {{base_url}} et {{token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login magasinier",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.expect(j.token).to.be.a('string');",
+                  "pm.environment.set('token', j.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email_magasinier}}\",\n  \"password\": \"{{password}}\"\n}" },
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+          }
+        },
+        {
+          "name": "Login gestionnaire",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.environment.set('token_gestionnaire', pm.response.json().token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email_gestionnaire}}\",\n  \"password\": \"{{password}}\"\n}" },
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup (capture IDs)",
+      "item": [
+        {
+          "name": "GET /stocks — capture product & warehouses",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const rows = pm.response.json().data;",
+                  "pm.expect(rows.length, 'au moins un stock').to.be.above(0);",
+                  "const withStock = rows.find(r => r.disponible >= 5) || rows[0];",
+                  "pm.environment.set('product_id', withStock.product_id);",
+                  "pm.environment.set('source_warehouse_id', withStock.warehouse_id);",
+                  "const other = rows.find(r => r.warehouse_id !== withStock.warehouse_id);",
+                  "if (other) pm.environment.set('dest_warehouse_id', other.warehouse_id);",
+                  "pm.environment.set('dispo_before', withStock.disponible);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/stocks", "host": ["{{base_url}}"], "path": ["stocks"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stocks & Mouvements",
+      "item": [
+        {
+          "name": "GET /stocks?warehouse_id (filtre)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const rows = pm.response.json().data;",
+                  "pm.test('tous dans l\\'entrepôt filtré', () => rows.every(r => r.warehouse_id === pm.environment.get('source_warehouse_id')));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/stocks?warehouse_id={{source_warehouse_id}}", "host": ["{{base_url}}"], "path": ["stocks"], "query": [{ "key": "warehouse_id", "value": "{{source_warehouse_id}}" }] }
+          }
+        },
+        {
+          "name": "GET /stocks/alerts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.expect(pm.response.json().data).to.be.an('array');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/stocks/alerts", "host": ["{{base_url}}"], "path": ["stocks", "alerts"] }
+          }
+        },
+        {
+          "name": "POST /movements — entrée (achat) OK 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const m = pm.response.json().data;",
+                  "pm.test('référence MVT générée', () => pm.expect(m.reference).to.match(/^MVT-\\d{4}-\\d{6}$/));",
+                  "pm.test('type = achat', () => pm.expect(m.type).to.eql('achat'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"type\": \"achat\",\n  \"quantite\": 10,\n  \"product_id\": \"{{product_id}}\",\n  \"warehouse_id\": \"{{source_warehouse_id}}\",\n  \"motif\": \"Réception fournisseur (test)\"\n}" },
+            "url": { "raw": "{{base_url}}/movements", "host": ["{{base_url}}"], "path": ["movements"] }
+          }
+        },
+        {
+          "name": "GET /stocks — vérifie recalcul disponible (+10)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const row = pm.response.json().data.find(r => r.product_id === pm.environment.get('product_id'));",
+                  "const expected = Number(pm.environment.get('dispo_before')) + 10;",
+                  "pm.test('disponible recalculé', () => pm.expect(row.disponible).to.eql(expected));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/stocks?warehouse_id={{source_warehouse_id}}&product_id={{product_id}}", "host": ["{{base_url}}"], "path": ["stocks"], "query": [{ "key": "warehouse_id", "value": "{{source_warehouse_id}}" }, { "key": "product_id", "value": "{{product_id}}" }] }
+          }
+        },
+        {
+          "name": "POST /movements — sortie (vente) OK 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('type = vente', () => pm.expect(pm.response.json().data.type).to.eql('vente'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"type\": \"vente\",\n  \"quantite\": 3,\n  \"product_id\": \"{{product_id}}\",\n  \"warehouse_id\": \"{{source_warehouse_id}}\"\n}" },
+            "url": { "raw": "{{base_url}}/movements", "host": ["{{base_url}}"], "path": ["movements"] }
+          }
+        },
+        {
+          "name": "POST /movements — sortie refusée (stock insuffisant) 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('422 Unprocessable', () => pm.response.to.have.status(422));",
+                  "pm.test('message présent', () => pm.expect(pm.response.json().message).to.be.a('string'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"type\": \"vente\",\n  \"quantite\": 9999999,\n  \"product_id\": \"{{product_id}}\",\n  \"warehouse_id\": \"{{source_warehouse_id}}\"\n}" },
+            "url": { "raw": "{{base_url}}/movements", "host": ["{{base_url}}"], "path": ["movements"] }
+          }
+        },
+        {
+          "name": "GET /movements (historique paginé)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.expect(pm.response.json().meta.total).to.be.at.least(2);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/movements", "host": ["{{base_url}}"], "path": ["movements"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transferts — cycle complet brouillon → recu",
+      "item": [
+        {
+          "name": "POST /transfers — créer brouillon (magasinier)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const t = pm.response.json().data;",
+                  "pm.test('statut = brouillon', () => pm.expect(t.statut).to.eql('brouillon'));",
+                  "pm.test('référence TRF', () => pm.expect(t.reference).to.match(/^TRF-\\d{4}-\\d{6}$/));",
+                  "pm.environment.set('transfer_id', t.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"source_warehouse_id\": \"{{source_warehouse_id}}\",\n  \"dest_warehouse_id\": \"{{dest_warehouse_id}}\",\n  \"note\": \"Transfert de test\",\n  \"items\": [\n    { \"product_id\": \"{{product_id}}\", \"quantite\": 5 }\n  ]\n}" },
+            "url": { "raw": "{{base_url}}/transfers", "host": ["{{base_url}}"], "path": ["transfers"] }
+          }
+        },
+        {
+          "name": "POST /transfers/{id}/submit (magasinier)",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('statut = en_attente', () => pm.expect(pm.response.json().data.statut).to.eql('en_attente'));"], "type": "text/javascript" } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/transfers/{{transfer_id}}/submit", "host": ["{{base_url}}"], "path": ["transfers", "{{transfer_id}}", "submit"] }
+          }
+        },
+        {
+          "name": "POST /transfers/{id}/validate (gestionnaire) — sortie source",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('statut = valide', () => pm.expect(pm.response.json().data.statut).to.eql('valide'));"], "type": "text/javascript" } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_gestionnaire}}" }],
+            "url": { "raw": "{{base_url}}/transfers/{{transfer_id}}/validate", "host": ["{{base_url}}"], "path": ["transfers", "{{transfer_id}}", "validate"] }
+          }
+        },
+        {
+          "name": "POST /transfers/{id}/receive (magasinier) — entrée dest",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('statut = recu', () => pm.expect(pm.response.json().data.statut).to.eql('recu'));"], "type": "text/javascript" } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/transfers/{{transfer_id}}/receive", "host": ["{{base_url}}"], "path": ["transfers", "{{transfer_id}}", "receive"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transferts — annulation après validation (ré-entrée source)",
+      "item": [
+        {
+          "name": "POST /transfers — créer brouillon (B)",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('201 Created', () => pm.response.to.have.status(201));", "pm.environment.set('transfer_id_b', pm.response.json().data.id);"], "type": "text/javascript" } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"source_warehouse_id\": \"{{source_warehouse_id}}\",\n  \"dest_warehouse_id\": \"{{dest_warehouse_id}}\",\n  \"items\": [ { \"product_id\": \"{{product_id}}\", \"quantite\": 2 } ]\n}" },
+            "url": { "raw": "{{base_url}}/transfers", "host": ["{{base_url}}"], "path": ["transfers"] }
+          }
+        },
+        {
+          "name": "POST /transfers/{idB}/submit",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{base_url}}/transfers/{{transfer_id_b}}/submit", "host": ["{{base_url}}"], "path": ["transfers", "{{transfer_id_b}}", "submit"] } },
+          "event": [ { "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"], "type": "text/javascript" } } ]
+        },
+        {
+          "name": "POST /transfers/{idB}/validate (gestionnaire)",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token_gestionnaire}}" }], "url": { "raw": "{{base_url}}/transfers/{{transfer_id_b}}/validate", "host": ["{{base_url}}"], "path": ["transfers", "{{transfer_id_b}}", "validate"] } },
+          "event": [ { "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.expect(pm.response.json().data.statut).to.eql('valide');"], "type": "text/javascript" } } ]
+        },
+        {
+          "name": "POST /transfers/{idB}/cancel (gestionnaire) — ré-entrée source",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token_gestionnaire}}" }], "url": { "raw": "{{base_url}}/transfers/{{transfer_id_b}}/cancel", "host": ["{{base_url}}"], "path": ["transfers", "{{transfer_id_b}}", "cancel"] } },
+          "event": [ { "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('statut = annule', () => pm.expect(pm.response.json().data.statut).to.eql('annule'));"], "type": "text/javascript" } } ]
+        }
+      ]
+    },
+    {
+      "name": "Inventaires — ouverture → saisie → ajustement",
+      "item": [
+        {
+          "name": "POST /inventories — ouvrir (gestionnaire)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const inv = pm.response.json().data;",
+                  "pm.test('statut = en_cours', () => pm.expect(inv.statut).to.eql('en_cours'));",
+                  "pm.environment.set('inventory_id', inv.id);",
+                  "const item = inv.items[0];",
+                  "pm.environment.set('inventory_item_id', item.id);",
+                  "pm.environment.set('item_theorique', item.qte_theorique);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_gestionnaire}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"warehouse_id\": \"{{source_warehouse_id}}\",\n  \"type\": \"global\"\n}" },
+            "url": { "raw": "{{base_url}}/inventories", "host": ["{{base_url}}"], "path": ["inventories"] }
+          }
+        },
+        {
+          "name": "PUT /inventories/{id}/items/{itemId} — saisie (magasinier)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": { "exec": ["pm.environment.set('qte_reelle', Number(pm.environment.get('item_theorique')) + 4);"], "type": "text/javascript" }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('écart = +4', () => pm.expect(Number(pm.response.json().data.ecart)).to.eql(4));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"qte_reelle\": {{qte_reelle}}\n}" },
+            "url": { "raw": "{{base_url}}/inventories/{{inventory_id}}/items/{{inventory_item_id}}", "host": ["{{base_url}}"], "path": ["inventories", "{{inventory_id}}", "items", "{{inventory_item_id}}"] }
+          }
+        },
+        {
+          "name": "POST /inventories/{id}/close (magasinier)",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{base_url}}/inventories/{{inventory_id}}/close", "host": ["{{base_url}}"], "path": ["inventories", "{{inventory_id}}", "close"] } },
+          "event": [ { "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('statut = cloture', () => pm.expect(pm.response.json().data.statut).to.eql('cloture'));"], "type": "text/javascript" } } ]
+        },
+        {
+          "name": "POST /inventories/{id}/adjust (gestionnaire) — mouvements d'écart",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token_gestionnaire}}" }], "url": { "raw": "{{base_url}}/inventories/{{inventory_id}}/adjust", "host": ["{{base_url}}"], "path": ["inventories", "{{inventory_id}}", "adjust"] } },
+          "event": [ { "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('statut = ajuste', () => pm.expect(pm.response.json().data.statut).to.eql('ajuste'));"], "type": "text/javascript" } } ]
+        }
+      ]
+    },
+    {
+      "name": "Dashboard & Rapports",
+      "item": [
+        {
+          "name": "GET /dashboard (gestionnaire)",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "const j = pm.response.json();", "pm.test('KPIs présents', () => pm.expect(j.kpis).to.have.property('nb_produits'));", "pm.test('séries présentes', () => pm.expect(j).to.have.property('mouvements_par_jour'));"], "type": "text/javascript" } }
+          ],
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token_gestionnaire}}" }], "url": { "raw": "{{base_url}}/dashboard", "host": ["{{base_url}}"], "path": ["dashboard"] } }
+        },
+        {
+          "name": "GET /reports/stocks?format=pdf — Content-Type PDF",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('Content-Type application/pdf', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf'));"], "type": "text/javascript" } }
+          ],
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token_gestionnaire}}" }], "url": { "raw": "{{base_url}}/reports/stocks?format=pdf", "host": ["{{base_url}}"], "path": ["reports", "stocks"], "query": [{ "key": "format", "value": "pdf" }] } }
+        },
+        {
+          "name": "GET /reports/mouvements?format=xlsx — Content-Type Excel",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('Content-Type Excel (xlsx)', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('spreadsheetml'));"], "type": "text/javascript" } }
+          ],
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token_gestionnaire}}" }], "url": { "raw": "{{base_url}}/reports/mouvements?format=xlsx", "host": ["{{base_url}}"], "path": ["reports", "mouvements"], "query": [{ "key": "format", "value": "xlsx" }] } }
+        }
+      ]
+    }
+  ]
+}
