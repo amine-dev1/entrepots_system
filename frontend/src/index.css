@@ -1,12 +1,69 @@
 @import "tailwindcss";
 
+/* Palette "primary" (conception §4.1) — exposée en utilitaires Tailwind v4. */
+@theme {
+  --color-primary-50:  #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+}
+
 html,
 body,
 #root {
   margin: 0;
   min-height: 100vh;
+  height: 100%;
 }
 
 body {
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+/* Classes de composants réutilisées par les écrans (conception §4.1). */
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl border border-gray-100 shadow-sm;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-gray-600 mb-1;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900
+           outline-none transition-colors
+           focus:border-primary-500 focus:ring-2 focus:ring-primary-100
+           placeholder:text-gray-400;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+           bg-primary-600 text-white transition-colors
+           hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+           bg-white border border-gray-200 text-gray-700 transition-colors
+           hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+           bg-red-600 text-white transition-colors
+           hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
 }
