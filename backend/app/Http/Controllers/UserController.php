@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
+use App\Services\ActivityLogger;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -41,6 +42,12 @@ class UserController extends Controller
             $user->assignRole($data['role']);
         }
 
+        ActivityLogger::log(
+            'creation',
+            "Création de l'utilisateur : {$user->nom} {$user->prenom} (Email: {$user->email})",
+            $user
+        );
+
         return response()->json($user->load('roles'), 201);
     }
 
@@ -62,6 +69,12 @@ class UserController extends Controller
             $user->syncRoles([$data['role']]);
         }
 
+        ActivityLogger::log(
+            'modification',
+            "Modification de l'utilisateur : {$user->nom} {$user->prenom} (Email: {$user->email})",
+            $user
+        );
+
         return response()->json($user->fresh('roles'));
     }
 
@@ -76,6 +89,12 @@ class UserController extends Controller
     public function toggle(User $user)
     {
         $user->update(['actif' => !$user->actif]);
+
+        ActivityLogger::log(
+            'modification',
+            "Modification de l'utilisateur : {$user->nom} {$user->prenom} (Email: {$user->email})",
+            $user
+        );
 
         return response()->json([
             'message' => $user->actif ? 'Utilisateur activé.' : 'Utilisateur désactivé.',

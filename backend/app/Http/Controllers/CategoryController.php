@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
@@ -31,6 +32,12 @@ class CategoryController extends Controller
 
         $category = Category::create($data);
 
+        ActivityLogger::log(
+            'creation',
+            "Création de la catégorie : {$category->nom}",
+            $category
+        );
+
         return response()->json($category, 201);
     }
 
@@ -43,6 +50,12 @@ class CategoryController extends Controller
         ]);
 
         $category->update($data);
+
+        ActivityLogger::log(
+            'modification',
+            "Modification de la catégorie : {$category->nom}",
+            $category
+        );
 
         return response()->json($category->fresh());
     }
@@ -57,6 +70,12 @@ class CategoryController extends Controller
         }
 
         $category->delete();
+
+        ActivityLogger::log(
+            'suppression',
+            "Suppression de la catégorie : {$category->nom}",
+            $category
+        );
 
         return response()->json(['message' => 'Catégorie supprimée.']);
     }

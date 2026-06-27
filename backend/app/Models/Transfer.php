@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 class Transfer extends Model
 {
     use HasFactory, HasUuids;
-
+    use SoftDeletes;
     protected $fillable = [
         'reference',
         'source_warehouse_id',
@@ -20,6 +20,8 @@ class Transfer extends Model
         'received_by',
         'validated_at',
         'received_at',
+        'canceled_by',
+        'canceled_at',
         'note',
     ];
 

@@ -1,16 +1,17 @@
 <?php
 
+use App\Http\Controllers\Api\V1\ActivityLogController;
+use App\Http\Controllers\Api\V1\DashboardController;
+use App\Http\Controllers\Api\V1\InventoryController;
+use App\Http\Controllers\Api\V1\MovementController;
+use App\Http\Controllers\Api\V1\ReportController;
+use App\Http\Controllers\Api\V1\StockController;
+use App\Http\Controllers\Api\V1\TransferController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
-use App\Http\Controllers\Api\V1\StockController;
-use App\Http\Controllers\Api\V1\MovementController;
-use App\Http\Controllers\Api\V1\TransferController;
-use App\Http\Controllers\Api\V1\InventoryController;
-use App\Http\Controllers\Api\V1\DashboardController;
-use App\Http\Controllers\Api\V1\ReportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -119,5 +120,8 @@ Route::prefix('v1')->group(function () {
             ->middleware('permission:view-dashboard');
         Route::get('/reports/{type}', [ReportController::class, 'show'])
             ->middleware('permission:view-reports');
+        Route::get('/activity-logs', [ActivityLogController::class, 'index'])
+            ->middleware('permission:view-activity-logs')
+            ;
     });
 });
