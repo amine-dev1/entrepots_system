@@ -95,6 +95,12 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => 'prefer',
+            // Reuse the connection across requests when running `php artisan serve`
+            // (single long-lived process) to avoid paying the ~2s cold TLS connect
+            // to the remote Neon DB on every request. Toggle via DB_PERSISTENT.
+            'options' => array_filter([
+                PDO::ATTR_PERSISTENT => env('DB_PERSISTENT', false),
+            ]),
         ],
 
         'sqlsrv' => [
