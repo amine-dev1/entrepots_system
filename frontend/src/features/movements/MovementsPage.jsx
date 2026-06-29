@@ -162,7 +162,7 @@ export default function MovementsPage() {
         <DataTable columns={columns} data={rows} loading={loading} emptyText="Aucun mouvement" />
       </div>
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Nouveau mouvement" size="sm">
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} icon={TrendingUp} title="Nouveau mouvement" subtitle="Entrée ou sortie de stock" size="md">
         <form onSubmit={handleSave} className="space-y-4">
           {errors._ && <div className="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">{errors._[0]}</div>}
 

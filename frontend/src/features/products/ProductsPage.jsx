@@ -130,7 +130,9 @@ export default function ProductsPage() {
       </div>
 
       <Modal open={modal.open} onClose={() => setModal({ open: false, data: null })}
-        title={modal.data ? 'Modifier le produit' : 'Nouveau produit'} size="sm">
+        icon={Tag}
+        title={modal.data ? 'Modifier le produit' : 'Nouveau produit'}
+        subtitle={modal.data ? modal.data.nom : 'Ajouter un article au catalogue'} size="md">
         <form onSubmit={handleSave} className="space-y-4">
           <div>
             <label className="label">Nom <span className="text-red-500">*</span></label>

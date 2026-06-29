@@ -158,7 +158,7 @@ export default function InventoryListPage() {
         <DataTable columns={columns} searchable={false} data={rows} loading={loading} emptyText="Aucun inventaire trouvé" />
       </div>
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Nouvelle session d'inventaire" size="md">
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} icon={ClipboardList} title="Nouvelle session d'inventaire" subtitle="Comptage physique du stock" size="md">
         {errors.global && <div className="p-3 mb-4 text-sm text-red-600 bg-red-50 rounded-lg">{errors.global[0]}</div>}
         
         <div className="space-y-4">

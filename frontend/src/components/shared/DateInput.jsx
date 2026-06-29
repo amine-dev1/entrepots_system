@@ -126,8 +126,8 @@ export default function DateInput({ value, onChange, placeholder = 'jj/mm/aaaa',
         type="button"
         onClick={() => setOpen(o => !o)}
         className={cn(
-          'w-full flex items-center gap-2 px-3 py-2 bg-white border rounded-lg text-sm text-left',
-          'outline-none transition-colors',
+          'w-full flex items-center gap-2 px-3.5 py-2.5 bg-white border rounded-lg text-sm text-left',
+          'outline-none transition-all duration-150',
           open ? 'border-primary-500 ring-2 ring-primary-100' : 'border-gray-200 hover:border-gray-300',
         )}
         {...rest}

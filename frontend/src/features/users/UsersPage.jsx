@@ -168,7 +168,9 @@ export default function UsersPage() {
       </div>
 
       <Modal open={modal.open} onClose={() => setModal({ open: false, data: null })}
-        title={modal.data ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}>
+        icon={Users}
+        title={modal.data ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}
+        subtitle={modal.data ? `${modal.data.prenom} ${modal.data.nom}` : 'Créer un compte et assigner un rôle'}>
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>

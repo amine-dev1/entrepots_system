@@ -147,7 +147,9 @@ export default function CategoriesPage() {
       </div>
 
       <Modal open={modal.open} onClose={() => setModal({ open: false, data: null })}
-        title={modal.data ? 'Modifier la catégorie' : 'Nouvelle catégorie'} size="sm">
+        icon={Tag}
+        title={modal.data ? 'Modifier la catégorie' : 'Nouvelle catégorie'}
+        subtitle={modal.data ? modal.data.nom : 'Regrouper vos produits'} size="sm">
         <form onSubmit={handleSave} className="space-y-4">
           <div>
             <label className="label">Nom <span className="text-red-500">*</span></label>

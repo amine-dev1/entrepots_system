@@ -28,6 +28,18 @@ body,
   to   { opacity: 1; transform: translateY(0)    scaleY(1); }
 }
 
+/* Animations des modales (création / édition) */
+@keyframes modalPop {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+@keyframes overlayFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-modal   { animation: modalPop 200ms cubic-bezier(0.16, 1, 0.3, 1); }
+.animate-overlay { animation: overlayFade 150ms ease-out; }
+
 body {
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   background: #f8fafc;
@@ -41,12 +53,13 @@ body {
   }
 
   .label {
-    @apply block text-sm font-medium text-gray-600 mb-1;
+    @apply block text-sm font-medium text-gray-700 mb-1.5;
   }
 
   .input {
-    @apply w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900
-           outline-none transition-colors
+    @apply w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900
+           outline-none transition-all duration-150
+           hover:border-gray-300
            focus:border-primary-500 focus:ring-2 focus:ring-primary-100
            placeholder:text-gray-400;
   }
@@ -56,20 +69,22 @@ body {
   }
 
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-           bg-primary-600 text-white transition-colors
-           hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
+           bg-primary-600 text-white transition-all duration-150
+           hover:bg-primary-700 hover:shadow-sm hover:shadow-primary-200
+           active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-           bg-white border border-gray-200 text-gray-700 transition-colors
-           hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
+           bg-white border border-gray-200 text-gray-700 transition-all duration-150
+           hover:bg-gray-50 hover:border-gray-300
+           active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
   }
 
   .btn-danger {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-           bg-red-600 text-white transition-colors
-           hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
+           bg-red-600 text-white transition-all duration-150
+           hover:bg-red-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
   }
 }

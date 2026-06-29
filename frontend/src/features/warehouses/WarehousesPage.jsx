@@ -119,7 +119,9 @@ export default function WarehousesPage() {
 
       {/* Form Modal */}
       <Modal open={modal.open} onClose={() => setModal({ open: false, data: null })}
-        title={modal.data ? 'Modifier l\'entrepôt' : 'Nouvel entrepôt'}>
+        icon={Warehouse}
+        title={modal.data ? 'Modifier l\'entrepôt' : 'Nouvel entrepôt'}
+        subtitle={modal.data ? modal.data.nom : 'Ajouter un site de stockage'}>
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>

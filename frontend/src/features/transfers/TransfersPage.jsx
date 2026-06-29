@@ -341,7 +341,7 @@ export default function TransfersPage() {
       </div>
 
       {/* ── Create Wizard Modal ────────────────────────────────────────────────── */}
-      <Modal open={modal.open} onClose={closeModal} title="Nouveau transfert" size={step === 3 ? 'md' : 'lg'}>
+      <Modal open={modal.open} onClose={closeModal} icon={ArrowLeftRight} title="Nouveau transfert" subtitle="Déplacer du stock entre entrepôts" size={step === 3 ? 'md' : 'lg'}>
         
         <div className="flex items-center justify-center mb-6">
           <div className="flex items-center space-x-4 text-sm font-medium">
