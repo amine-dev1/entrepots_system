@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use Illuminate\Support\Facades\Storage;
+use App\Services\ActivityLogger;
 
 class ProductController extends Controller
 {
@@ -45,6 +46,12 @@ class ProductController extends Controller
 
         $product = Product::create($data);
 
+        ActivityLogger::log(
+            'creation',
+            "Création du produit : {$product->nom} (SKU: {$product->sku})",
+            $product
+        );
+
         return response()->json($product->load('category'), 201);
     }
 
@@ -74,6 +81,12 @@ class ProductController extends Controller
 
         $product->update($data);
 
+        ActivityLogger::log(
+            'modification',
+            "Modification du produit : {$product->nom} (SKU: {$product->sku})",
+            $product
+        );
+
         return response()->json($product->fresh('category'));
     }
 
@@ -81,6 +94,12 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $product->update(['actif' => false]);
+
+        ActivityLogger::log(
+            'modification',
+            "Désactivation du produit : {$product->nom} (SKU: {$product->sku})",
+            $product
+        );
 
         return response()->json(['message' => 'Produit désactivé.']);
     }

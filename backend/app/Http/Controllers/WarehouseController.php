@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
-
+use App\Services\ActivityLogger;
 class WarehouseController extends Controller
 {
     public function index(Request $request)
@@ -32,7 +32,11 @@ class WarehouseController extends Controller
         ]);
 
         $warehouse = Warehouse::create($data);
-
+        ActivityLogger::log(
+                    'creation',
+                    "Création de l'entrepôt : {$warehouse->nom} (Code: {$warehouse->code})",
+                    $warehouse
+        );
         return response()->json($warehouse, 201);
     }
 
@@ -49,7 +53,11 @@ class WarehouseController extends Controller
         ]);
 
         $warehouse->update($data);
-
+        ActivityLogger::log(
+                    'modification',
+                    "Modification de l'entrepôt : {$warehouse->nom} (Code: {$warehouse->code})",
+                    $warehouse
+        );
         return response()->json($warehouse->fresh());
     }
 
@@ -66,6 +74,12 @@ class WarehouseController extends Controller
         }
 
         $warehouse->update(['actif' => false]);
+
+        ActivityLogger::log(
+            'modification',
+            "Désactivation de l'entrepô : {$warehouse->nom} (Code: {$warehouse->code})",
+            $warehouse
+        );
 
         return response()->json(['message' => 'Entrepôt désactivé.']);
     }

@@ -9,6 +9,7 @@ use App\Http\Resources\InventoryItemResource;
 use App\Http\Resources\InventoryResource;
 use App\Models\Inventory;
 use App\Models\InventoryItem;
+use App\Services\ActivityLogger;
 use App\Services\InventoryService;
 use Illuminate\Http\Request;
 
@@ -51,6 +52,11 @@ class InventoryController extends Controller
             $request->validated('warehouse_id'),
             $request->user(),
             $request->validated('type'),
+        );
+        ActivityLogger::log(
+            'creation',
+            "Création de l'inventaire : {$inventory->warehouse_id}",
+            $inventory
         );
 
         return (new InventoryResource($inventory->load(['warehouse', 'items.product'])))

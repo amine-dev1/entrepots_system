@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateTransferRequest;
 use App\Http\Resources\TransferResource;
 use App\Models\Transfer;
 use App\Models\TransferItem;
+use App\Services\ActivityLogger;
 use App\Services\TransferService;
 use App\Support\Ref;
 use Illuminate\Http\Request;
@@ -81,6 +82,14 @@ class TransferController extends Controller
             return $transfer;
         });
 
+        ActivityLogger::log(
+            'creation',
+            "Création du transfert : {$transfer->reference}",
+            $transfer
+        );
+
+
+
         return (new TransferResource($transfer->load(['sourceWarehouse', 'destWarehouse', 'items.product'])))
             ->response()
             ->setStatusCode(201);
@@ -117,6 +126,11 @@ class TransferController extends Controller
                 }
             }
         });
+        ActivityLogger::log(
+            'modification',
+            "Modification du transfert : {$transfer->reference}",
+            $transfer
+        );
 
         return new TransferResource($transfer->fresh(['sourceWarehouse', 'destWarehouse', 'items.product']));
     }
@@ -136,6 +150,11 @@ class TransferController extends Controller
             $transfer->items()->delete();
             $transfer->delete();
         });
+        ActivityLogger::log(
+            'suppression',
+            "Suppression du transfert : {$transfer->reference}",
+            $transfer
+        );
 
         return response()->json(null, 204);
     }

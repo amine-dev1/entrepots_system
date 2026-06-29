@@ -6,9 +6,15 @@ import DashboardPage from './features/dashboard/DashboardPage'
 import WarehousesPage from './features/warehouses/WarehousesPage'
 import CategoriesPage from './features/categories/CategoriesPage'
 import UsersPage from './features/users/UsersPage'
+import TransfersPage from './features/transfers/TransfersPage'
+import TransferDetailPage from './features/transfers/TransferDetailPage'
+import InventoriesPage from './features/inventories/InventoriesPage'
+import InventoryAdjustPage from './features/inventories/InventoryAdjustPage'
+import InventorySessionPage from './features/inventories/InventorySessionPage'
+import ReportsPage from './features/reports/ReportsPage'
+import ActivityLogPage from './features/activity/ActivityLogPage'
 import {
   ProductsPage, StocksPage, MovementsPage,
-  TransfersPage, InventoriesPage, ReportsPage, ActivityPage,
 } from './features/placeholders'
 
 // AuthProvider est fourni par main.jsx (couche API existante de main).
@@ -35,9 +41,13 @@ export default function App() {
           <Route path="stocks"      element={<StocksPage />} />
           <Route path="movements"   element={<MovementsPage />} />
           <Route path="transfers"   element={<TransfersPage />} />
+          <Route path="/transfers/:id" element={<TransferDetailPage />} />
           <Route path="inventories" element={<InventoriesPage />} />
+          <Route path="/inventories/:id" element={<InventoriesPage />} />
+          <Route path="/inventories/:id/adjust" element={<InventoryAdjustPage />} />
+          <Route path="/inventories/:id/session" element={<InventorySessionPage />} />
           <Route path="reports"     element={<ReportsPage />} />
-          <Route path="activity"    element={<ActivityPage />} />
+          <Route path="activity"    element={<ActivityLogPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
