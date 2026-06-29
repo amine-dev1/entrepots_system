@@ -121,7 +121,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/reports/{type}', [ReportController::class, 'show'])
             ->middleware('permission:view-reports');
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])
-            ->middleware('permission:view-activity-logs')
-            ;
+            ->middleware('permission:view-activity');
     });
 });
