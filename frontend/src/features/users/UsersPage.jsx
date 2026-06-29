@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { listUsers, createUser, updateUser, toggleUser } from '../../api/users.api'
 import DataTable from '../../components/shared/DataTable'
 import Modal from '../../components/shared/Modal'
+import Select from '../../components/shared/Select'
 import { StatusBadge } from '../../components/shared/Badges'
 import { Users, Plus, Pencil, Power } from 'lucide-react'
 import { formatDate, getRoleBadgeColor, cn } from '../../lib/utils'
@@ -192,10 +193,12 @@ export default function UsersPage() {
           </div>
           <div>
             <label className="label">Rôle <span className="text-red-500">*</span></label>
-            <select className="input" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} required>
-              <option value="">— Sélectionner un rôle —</option>
-              {ROLES.map(role => <option key={role.value} value={role.value}>{role.label}</option>)}
-            </select>
+            <Select
+              value={form.role}
+              onChange={val => setForm({ ...form, role: val })}
+              options={ROLES}
+              placeholder="— Sélectionner un rôle —"
+            />
             {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role[0]}</p>}
           </div>
           <div className="grid grid-cols-2 gap-4">

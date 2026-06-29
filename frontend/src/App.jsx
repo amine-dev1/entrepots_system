@@ -13,9 +13,9 @@ import InventoryAdjustPage from './features/inventories/InventoryAdjustPage'
 import InventorySessionPage from './features/inventories/InventorySessionPage'
 import ReportsPage from './features/reports/ReportsPage'
 import ActivityLogPage from './features/activity/ActivityLogPage'
-import {
-  ProductsPage, StocksPage, MovementsPage,
-} from './features/placeholders'
+import ProductsPage from './features/products/ProductsPage'
+import StocksPage from './features/stocks/StocksPage'
+import MovementsPage from './features/movements/MovementsPage'
 
 // AuthProvider est fourni par main.jsx (couche API existante de main).
 export default function App() {

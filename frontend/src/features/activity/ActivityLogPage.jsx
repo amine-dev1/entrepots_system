@@ -3,6 +3,8 @@ import { Activity, Search, Filter, Calendar, User, Plus, Edit, Trash, LogIn, Che
 import { listActivityLogs } from '../../api/activity.api'
 import { listUsers } from '../../api/users.api' // Supposant que vous avez cette route pour les filtres
 import { formatDate } from '../../lib/utils' // Assurez-vous que cette fonction gère l'heure (ex: DD/MM/YYYY HH:mm)
+import Select from '../../components/shared/Select'
+import DateInput from '../../components/shared/DateInput'
 
 // Dictionnaire pour styliser les différents types d'actions dans la timeline
 const ACTION_STYLES = {
@@ -107,49 +109,33 @@ export default function ActivityLogPage() {
             />
           </div>
 
-          <div className="relative">
-            <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <select 
-              className="input pl-9 w-full"
-              value={filters.user_id}
-              onChange={e => setFilters({ ...filters, user_id: e.target.value })}
-            >
-              <option value="">Tous les utilisateurs</option>
-              {users.map(u => <option key={u.id} value={u.id}>{u.prenom} {u.nom}</option>)}
-            </select>
-          </div>
+          <Select
+            icon={User}
+            value={filters.user_id}
+            onChange={val => setFilters({ ...filters, user_id: val })}
+            options={users.map(u => ({ value: u.id, label: `${u.prenom} ${u.nom}` }))}
+            placeholder="Tous les utilisateurs"
+          />
 
-          <div className="relative">
-            <Activity size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <select 
-              className="input pl-9 w-full"
-              value={filters.action}
-              onChange={e => setFilters({ ...filters, action: e.target.value })}
-            >
-              <option value="">Toutes les actions</option>
-              {ACTION_TYPES.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
-            </select>
-          </div>
+          <Select
+            icon={Activity}
+            value={filters.action}
+            onChange={val => setFilters({ ...filters, action: val })}
+            options={ACTION_TYPES}
+            placeholder="Toutes les actions"
+          />
 
           <div className="flex gap-2">
-            <div className="relative w-full">
-              <input 
-                type="date" 
-                className="input text-xs w-full"
-                value={filters.date_debut}
-                onChange={e => setFilters({ ...filters, date_debut: e.target.value })}
-                title="Date de début"
-              />
-            </div>
-            <div className="relative w-full">
-              <input 
-                type="date" 
-                className="input text-xs w-full"
-                value={filters.date_fin}
-                onChange={e => setFilters({ ...filters, date_fin: e.target.value })}
-                title="Date de fin"
-              />
-            </div>
+            <DateInput
+              value={filters.date_debut}
+              onChange={val => setFilters({ ...filters, date_debut: val })}
+              title="Date de début"
+            />
+            <DateInput
+              value={filters.date_fin}
+              onChange={val => setFilters({ ...filters, date_fin: val })}
+              title="Date de fin"
+            />
           </div>
         </div>
       </div>

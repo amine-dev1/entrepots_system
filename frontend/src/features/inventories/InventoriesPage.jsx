@@ -3,6 +3,7 @@ import { listInventories, openInventory } from '../../api/inventories.api'
 import { listWarehouses } from '../../api/warehouses.api'
 import DataTable from '../../components/shared/DataTable'
 import Modal from '../../components/shared/Modal'
+import Select from '../../components/shared/Select'
 import { ClipboardList, Plus, Eye, Search, Play } from 'lucide-react'
 import { formatDate } from '../../lib/utils'
 import { InventoryBadge } from '../../components/shared/Badges'
@@ -137,23 +138,21 @@ export default function InventoryListPage() {
             />
           </div>
 
-          <select 
-            className="input md:w-48"
+          <Select
+            className="md:w-48"
             value={filters.statut}
-            onChange={e => setFilters({ ...filters, statut: e.target.value })}
-          >
-            <option value="">Tous les statuts</option>
-            {INVENTORY_STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-          </select>
+            onChange={val => setFilters({ ...filters, statut: val })}
+            options={INVENTORY_STATUSES}
+            placeholder="Tous les statuts"
+          />
 
-          <select 
-            className="input md:w-64"
+          <Select
+            className="md:w-64"
             value={filters.warehouse_id}
-            onChange={e => setFilters({ ...filters, warehouse_id: e.target.value })}
-          >
-            <option value="">Tous les entrepôts</option>
-            {warehouses.map(w => <option key={w.id} value={w.id}>{w.nom}</option>)}
-          </select>
+            onChange={val => setFilters({ ...filters, warehouse_id: val })}
+            options={warehouses.map(w => ({ value: w.id, label: w.nom }))}
+            placeholder="Tous les entrepôts"
+          />
         </div>
 
         <DataTable columns={columns} searchable={false} data={rows} loading={loading} emptyText="Aucun inventaire trouvé" />
@@ -165,19 +164,25 @@ export default function InventoryListPage() {
         <div className="space-y-4">
           <div>
             <label className="label">Entrepôt à inventorier <span className="text-red-500">*</span></label>
-            <select className="input" value={form.warehouse_id} onChange={e => setForm({ ...form, warehouse_id: e.target.value })}>
-              <option value="">— Sélectionner —</option>
-              {warehouses.map(w => <option key={w.id} value={w.id}>{w.nom}</option>)}
-            </select>
+            <Select
+              value={form.warehouse_id}
+              onChange={val => setForm({ ...form, warehouse_id: val })}
+              options={warehouses.map(w => ({ value: w.id, label: w.nom }))}
+              placeholder="— Sélectionner —"
+            />
             {errors.warehouse_id && <p className="text-red-500 text-xs mt-1">{errors.warehouse_id[0]}</p>}
           </div>
 
           <div>
             <label className="label">Type d'inventaire <span className="text-red-500">*</span></label>
-            <select className="input" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-              <option value="global">Global (Tout le stock)</option>
-              <option value="tournant">Tournant (Partiel)</option>
-            </select>
+            <Select
+              value={form.type}
+              onChange={val => setForm({ ...form, type: val })}
+              options={[
+                { value: 'global', label: 'Global (Tout le stock)' },
+                { value: 'tournant', label: 'Tournant (Partiel)' },
+              ]}
+            />
             {errors.type && <p className="text-red-500 text-xs mt-1">{errors.type[0]}</p>}
           </div>
           

@@ -4,6 +4,7 @@ import { listUsers } from '../../api/users.api'
 import DataTable from '../../components/shared/DataTable'
 import Modal from '../../components/shared/Modal'
 import ConfirmDialog from '../../components/shared/ConfirmDialog'
+import Select from '../../components/shared/Select'
 import { StatusBadge } from '../../components/shared/Badges'
 import { Plus, Pencil, Trash2, Warehouse, MapPin, Phone, User } from 'lucide-react'
 import { formatDate } from '../../lib/utils'
@@ -139,14 +140,12 @@ export default function WarehousesPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label"><User size={12} className="inline mr-1" />Responsable</label>
-              <select className="input" value={form.responsable} onChange={e => setForm({ ...form, responsable: e.target.value })}>
-                <option value="">— Aucun responsable —</option>
-                {users.map(user => (
-                  <option key={user.id} value={`${user.nom} ${user.prenom}`}>
-                    {user.nom} {user.prenom}
-                  </option>
-                ))}
-              </select>
+              <Select
+                value={form.responsable}
+                onChange={val => setForm({ ...form, responsable: val })}
+                options={users.map(user => ({ value: `${user.nom} ${user.prenom}`, label: `${user.nom} ${user.prenom}` }))}
+                placeholder="— Aucun responsable —"
+              />
               {errors.responsable && <p className="text-red-500 text-xs mt-1">{errors.responsable[0]}</p>}
             </div>
             <div>

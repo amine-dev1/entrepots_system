@@ -22,6 +22,12 @@ body,
   height: 100%;
 }
 
+/* Animation d'ouverture du menu déroulant custom (<Select>) */
+@keyframes dropdown {
+  from { opacity: 0; transform: translateY(-4px) scaleY(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scaleY(1); }
+}
+
 body {
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   background: #f8fafc;

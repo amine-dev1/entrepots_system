@@ -4,6 +4,7 @@ import { listCategories } from '../../api/categories.api'
 import DataTable from '../../components/shared/DataTable'
 import Modal from '../../components/shared/Modal'
 import ConfirmDialog from '../../components/shared/ConfirmDialog'
+import Select from '../../components/shared/Select'
 import { Tag, Plus, Pencil, Trash2, Image } from 'lucide-react'
 import { formatDate, formatMoney } from '../../lib/utils'
 
@@ -166,10 +167,12 @@ export default function ProductsPage() {
 
           <div>
             <label className="label">Catégorie</label>
-            <select className="input" value={form.categorie_id || ''} onChange={e => setForm({ ...form, categorie_id: e.target.value || null })}>
-              <option value="">— Aucune —</option>
-              {categories.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
-            </select>
+            <Select
+              value={form.categorie_id || ''}
+              onChange={val => setForm({ ...form, categorie_id: val || null })}
+              options={categories.map(c => ({ value: c.id, label: c.nom }))}
+              placeholder="— Aucune —"
+            />
             {errors.categorie_id && <p className="text-red-500 text-xs mt-1">{errors.categorie_id[0]}</p>}
           </div>
 

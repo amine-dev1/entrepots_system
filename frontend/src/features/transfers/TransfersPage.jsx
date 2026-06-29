@@ -8,6 +8,7 @@ import { listStocks } from '../../api/stocks.api'
 import DataTable from '../../components/shared/DataTable'
 import Modal from '../../components/shared/Modal'
 import ConfirmDialog from '../../components/shared/ConfirmDialog'
+import Select from '../../components/shared/Select'
 import { 
   ArrowLeftRight, Plus, Trash2, Eye, 
   ChevronRight, ChevronLeft, Search
@@ -311,36 +312,29 @@ export default function TransfersPage() {
             />
           </div>
           
-          <select 
-            className="input md:w-40"
+          <Select
+            className="md:w-40"
             value={filters.status}
-            onChange={e => setFilters({ ...filters, status: e.target.value })}
-          >
-            <option value="">Tous statuts</option>
-            {TRANSFER_STATUSES.map(status => (
-              <option key={status.value} value={status.value}>
-                {status.label}
-              </option>
-            ))}
-          </select>
+            onChange={val => setFilters({ ...filters, status: val })}
+            options={TRANSFER_STATUSES}
+            placeholder="Tous statuts"
+          />
 
-          <select 
-            className="input md:w-48"
+          <Select
+            className="md:w-48"
             value={filters.source_warehouse}
-            onChange={e => setFilters({ ...filters, source_warehouse: e.target.value })}
-          >
-            <option value="">Toutes sources</option>
-            {warehouses.map(w => <option key={w.id} value={w.id}>{w.nom}</option>)}
-          </select>
+            onChange={val => setFilters({ ...filters, source_warehouse: val })}
+            options={warehouses.map(w => ({ value: w.id, label: w.nom }))}
+            placeholder="Toutes sources"
+          />
 
-          <select 
-            className="input md:w-48"
+          <Select
+            className="md:w-48"
             value={filters.dest_warehouse}
-            onChange={e => setFilters({ ...filters, dest_warehouse: e.target.value })}
-          >
-            <option value="">Toutes destinations</option>
-            {warehouses.map(w => <option key={w.id} value={w.id}>{w.nom}</option>)}
-          </select>
+            onChange={val => setFilters({ ...filters, dest_warehouse: val })}
+            options={warehouses.map(w => ({ value: w.id, label: w.nom }))}
+            placeholder="Toutes destinations"
+          />
         </div>
 
         <DataTable columns={columns} searchable={false} data={filteredRows} loading={loading} emptyText="Aucun transfert trouvé" />
@@ -373,22 +367,24 @@ export default function TransfersPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="label">Entrepôt source <span className="text-red-500">*</span></label>
-                <select className="input" value={form.source_warehouse_id ?? ''}
-                  onChange={e => setForm({ ...form, source_warehouse_id: e.target.value || null, items: [] })}>
-                  <option value="">— Choisir —</option>
-                  {warehouses.map(w => <option key={w.id} value={w.id}>{w.nom}</option>)}
-                </select>
+                <Select
+                  value={form.source_warehouse_id ?? ''}
+                  onChange={val => setForm({ ...form, source_warehouse_id: val || null, items: [] })}
+                  options={warehouses.map(w => ({ value: w.id, label: w.nom }))}
+                  placeholder="— Choisir —"
+                />
                 {errors.source_warehouse_id && (
                   <p className="text-red-500 text-xs mt-1">{errors.source_warehouse_id[0]}</p>
                 )}
               </div>
               <div>
                 <label className="label">Entrepôt destination <span className="text-red-500">*</span></label>
-                <select className="input" value={form.dest_warehouse_id ?? ''}
-                  onChange={e => setForm({ ...form, dest_warehouse_id: e.target.value || null })}>
-                  <option value="">— Choisir —</option>
-                  {warehouses.map(w => <option key={w.id} value={w.id}>{w.nom}</option>)}
-                </select>
+                <Select
+                  value={form.dest_warehouse_id ?? ''}
+                  onChange={val => setForm({ ...form, dest_warehouse_id: val || null })}
+                  options={warehouses.map(w => ({ value: w.id, label: w.nom }))}
+                  placeholder="— Choisir —"
+                />
                 {errors.dest_warehouse_id && (
                   <p className="text-red-500 text-xs mt-1">{errors.dest_warehouse_id[0]}</p>
                 )}
@@ -453,18 +449,15 @@ export default function TransfersPage() {
                       return (
                         <tr key={idx} className="bg-white">
                           <td className="p-2">
-                            <select className="input text-sm" value={item.product_id}
-                              onChange={e => updateItem(idx, 'product_id', e.target.value)}>
-                              <option value="">— Sélectionner un produit —</option>
-                              {availableProducts.map(p => {
+                            <Select
+                              value={item.product_id}
+                              onChange={val => updateItem(idx, 'product_id', val)}
+                              placeholder="— Sélectionner un produit —"
+                              options={availableProducts.map(p => {
                                 const s = stocks.find(st => String(st.product_id) === String(p.id))
-                                return (
-                                  <option key={p.id} value={p.id}>
-                                    {p.nom} — {s?.disponible ?? 0} dispo
-                                  </option>
-                                )
+                                return { value: p.id, label: `${p.nom} — ${s?.disponible ?? 0} dispo` }
                               })}
-                            </select>
+                            />
                             {errors[`item_${idx}_product`] && (
                               <p className="text-red-500 text-xs mt-1">{errors[`item_${idx}_product`]}</p>
                             )}

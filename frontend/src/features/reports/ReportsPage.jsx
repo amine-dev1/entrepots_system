@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { downloadReport } from '../../api/reports.api'
 import { listWarehouses } from '../../api/warehouses.api'
+import Select from '../../components/shared/Select'
+import DateInput from '../../components/shared/DateInput'
 import { 
   FileText, Download, FileSpreadsheet, 
   Package, History, ClipboardList, BarChart3 
@@ -172,34 +174,28 @@ export default function ReportsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="col-span-1 md:col-span-3">
                 <label className="label">Restreindre à un entrepôt</label>
-                <select 
-                  className="input" 
+                <Select
                   value={filters.warehouse_id}
-                  onChange={e => setFilters({...filters, warehouse_id: e.target.value})}
-                >
-                  <option value="">Tous les entrepôts</option>
-                  {warehouses.map(w => <option key={w.id} value={w.id}>{w.nom}</option>)}
-                </select>
+                  onChange={val => setFilters({...filters, warehouse_id: val})}
+                  options={warehouses.map(w => ({ value: w.id, label: w.nom }))}
+                  placeholder="Tous les entrepôts"
+                />
               </div>
 
               {(type === 'mouvements' || type === 'inventaire') && (
                 <>
                   <div>
                     <label className="label">Date de début</label>
-                    <input 
-                      type="date" 
-                      className="input" 
+                    <DateInput
                       value={filters.date_debut}
-                      onChange={e => setFilters({...filters, date_debut: e.target.value})}
+                      onChange={val => setFilters({...filters, date_debut: val})}
                     />
                   </div>
                   <div>
                     <label className="label">Date de fin</label>
-                    <input 
-                      type="date" 
-                      className="input" 
+                    <DateInput
                       value={filters.date_fin}
-                      onChange={e => setFilters({...filters, date_fin: e.target.value})}
+                      onChange={val => setFilters({...filters, date_fin: val})}
                     />
                   </div>
                 </>
