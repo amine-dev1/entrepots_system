@@ -53,6 +53,8 @@ export function AuthProvider({ children }) {
   }
 
   const hasRole = (role) => roles.includes(role)
+  const hasPermission = (perm) => permissions.includes(perm)
+  const can = (perm) => hasRole('administrateur') || permissions.includes(perm)
 
   const value = {
     user,
@@ -63,6 +65,8 @@ export function AuthProvider({ children }) {
     login,
     logout,
     hasRole,
+    hasPermission,
+    can,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

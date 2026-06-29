@@ -8,28 +8,32 @@ import {
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
+// Visibility rules aligned with backend permissions (RolePermissionSeeder + api.php).
+// `roles`: shown if user has one of these roles (empty = all roles).
+// `permissions`: shown if user has one of these permissions (checked via `can()`).
 const navItems = [
-  { to: '/dashboard',   label: 'Tableau de bord', icon: LayoutDashboard,  roles: [] },
-  { to: '/warehouses',  label: 'Entrepôts',        icon: Warehouse,         roles: [] },
-  { to: '/categories',  label: 'Catégories',       icon: Tag,               roles: [] },
-  { to: '/users',       label: 'Utilisateurs',     icon: Users,             roles: [] },
-  { to: '/products',    label: 'Produits',         icon: Package,           roles: [] },
-  { to: '/stocks',      label: 'Stocks',           icon: BarChart3,         roles: [] },
-  { to: '/movements',   label: 'Mouvements',       icon: TrendingUp,        roles: [] },
-  { to: '/transfers',   label: 'Transferts',       icon: ArrowLeftRight,    roles: [] },
-  { to: '/inventories', label: 'Inventaires',      icon: ClipboardList,     roles: [] },
-  { to: '/reports',     label: 'Rapports',         icon: FileText,          roles: [] },
-  // Rôles seedés en minuscules côté backend.
-  { to: '/activity',    label: 'Journal',          icon: Activity,          roles: ['administrateur', 'auditeur'] },
+  { to: '/dashboard',   label: 'Tableau de bord', icon: LayoutDashboard,  permissions: ['view-dashboard'] },
+  { to: '/warehouses',  label: 'Entrepôts',        icon: Warehouse,       roles: ['administrateur', 'gestionnaire'] },
+  { to: '/categories',  label: 'Catégories',       icon: Tag,             roles: ['administrateur', 'gestionnaire'] },
+  { to: '/users',       label: 'Utilisateurs',     icon: Users,           roles: ['administrateur'] },
+  { to: '/products',    label: 'Produits',         icon: Package,          roles: ['administrateur', 'gestionnaire'] },
+  { to: '/stocks',      label: 'Stocks',           icon: BarChart3,       roles: ['administrateur', 'gestionnaire', 'magasinier'] },
+  { to: '/movements',   label: 'Mouvements',       icon: TrendingUp,      roles: ['administrateur', 'magasinier'] },
+  { to: '/transfers',   label: 'Transferts',       icon: ArrowLeftRight,  roles: ['administrateur', 'gestionnaire', 'magasinier'] },
+  { to: '/inventories', label: 'Inventaires',      icon: ClipboardList,   roles: ['administrateur', 'gestionnaire', 'magasinier'] },
+  { to: '/reports',     label: 'Rapports',         icon: FileText,        permissions: ['view-reports'] },
+  { to: '/activity',    label: 'Journal',          icon: Activity,        permissions: ['view-activity'] },
 ]
 
 export default function Sidebar() {
-  const { roles } = useAuth()
+  const { roles, can } = useAuth()
   const [collapsed, setCollapsed] = useState(false)
 
-  const visible = navItems.filter(item =>
-    item.roles.length === 0 || item.roles.some(r => roles.includes(r))
-  )
+  const visible = navItems.filter(item => {
+    if (item.permissions) return item.permissions.some(p => can(p))
+    if (item.roles && item.roles.length > 0) return item.roles.some(r => roles.includes(r))
+    return true
+  })
 
   return (
     <aside className={cn(
