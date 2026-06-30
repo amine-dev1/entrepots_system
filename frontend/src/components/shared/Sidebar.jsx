@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import {
   LayoutDashboard, Warehouse, Tag, Package, BarChart3,
   ArrowLeftRight, ClipboardList, FileText, Activity,
-  Users, ChevronLeft, ChevronRight, TrendingUp
+  Users, ChevronLeft, ChevronRight, TrendingUp, ShieldCheck
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
@@ -16,6 +16,7 @@ const navItems = [
   { to: '/warehouses',  label: 'Entrepôts',        icon: Warehouse,       roles: ['administrateur', 'gestionnaire'] },
   { to: '/categories',  label: 'Catégories',       icon: Tag,             roles: ['administrateur', 'gestionnaire'] },
   { to: '/users',       label: 'Utilisateurs',     icon: Users,           roles: ['administrateur'] },
+  { to: '/access',      label: 'Rôles & accès',    icon: ShieldCheck,     roles: ['administrateur'] },
   { to: '/products',    label: 'Produits',         icon: Package,          roles: ['administrateur', 'gestionnaire'] },
   { to: '/stocks',      label: 'Stocks',           icon: BarChart3,       roles: ['administrateur', 'gestionnaire', 'magasinier'] },
   { to: '/movements',   label: 'Mouvements',       icon: TrendingUp,      roles: ['administrateur', 'magasinier'] },

@@ -23,6 +23,11 @@ class MovementController extends Controller
     {
         $query = StockMovement::query()->with(['product', 'warehouse']);
 
+        $allowed = $request->user()->allowedWarehouseIds();
+        if ($allowed !== null) {
+            $query->whereIn('warehouse_id', $allowed);
+        }
+
         if ($request->filled('type')) {
             $query->where('type', $request->query('type'));
         }
@@ -51,6 +56,11 @@ class MovementController extends Controller
      */
     public function store(StoreMovementRequest $request)
     {
+        // Périmètre de données : interdire un entrepôt hors du périmètre.
+        if (! $request->user()->canAccessWarehouse($request->validated('warehouse_id'))) {
+            abort(403, "Vous n'avez pas accès à cet entrepôt.");
+        }
+
         $movement = $this->stockService->createMovement([
             'type'         => $request->validated('type'),
             'quantite'     => $request->validated('quantite'),

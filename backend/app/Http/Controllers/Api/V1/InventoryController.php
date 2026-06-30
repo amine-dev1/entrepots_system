@@ -24,6 +24,11 @@ class InventoryController extends Controller
     {
         $query = Inventory::query()->with('warehouse');
 
+        $allowed = $request->user()->allowedWarehouseIds();
+        if ($allowed !== null) {
+            $query->whereIn('warehouse_id', $allowed);
+        }
+
         if ($request->filled('warehouse_id')) {
             $query->where('warehouse_id', $request->query('warehouse_id'));
         }
@@ -48,6 +53,10 @@ class InventoryController extends Controller
     /** POST /inventories — open a session and snapshot theoretical stock. */
     public function store(StoreInventoryRequest $request)
     {
+        if (! $request->user()->canAccessWarehouse($request->validated('warehouse_id'))) {
+            abort(403, "Vous n'avez pas accès à cet entrepôt.");
+        }
+
         $inventory = $this->inventories->open(
             $request->validated('warehouse_id'),
             $request->user(),

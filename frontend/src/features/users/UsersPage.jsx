@@ -4,7 +4,8 @@ import DataTable from '../../components/shared/DataTable'
 import Modal from '../../components/shared/Modal'
 import Select from '../../components/shared/Select'
 import { StatusBadge } from '../../components/shared/Badges'
-import { Users, Plus, Pencil, Power } from 'lucide-react'
+import UserAccessModal from '../access/UserAccessModal'
+import { Users, Plus, Pencil, Power, ShieldCheck } from 'lucide-react'
 import { formatDate, getRoleBadgeColor, cn } from '../../lib/utils'
 
 const ROLES = [
@@ -21,6 +22,7 @@ export default function UsersPage() {
   const [modal, setModal]     = useState({ open: false, data: null })
   const [saving, setSaving]   = useState(false)
   const [toggling, setToggling] = useState(null)
+  const [accessModal, setAccessModal] = useState({ open: false, user: null })
   const [notification, setNotification] = useState(null)
   const [form, setForm]       = useState(EMPTY)
   const [errors, setErrors]   = useState({})
@@ -119,6 +121,9 @@ export default function UsersPage() {
       header: 'Actions',
       render: r => (
         <div className="flex items-center gap-2">
+          <button onClick={() => setAccessModal({ open: true, user: r })} className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Gérer les accès">
+            <ShieldCheck size={14} />
+          </button>
           <button onClick={() => openEdit(r)} className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Modifier">
             <Pencil size={14} />
           </button>
@@ -224,6 +229,13 @@ export default function UsersPage() {
           </div>
         </form>
       </Modal>
+
+      <UserAccessModal
+        open={accessModal.open}
+        user={accessModal.user}
+        onClose={() => setAccessModal({ open: false, user: null })}
+        onSaved={() => { setNotification({ type: 'success', message: 'Accès mis à jour avec succès.' }); load() }}
+      />
     </div>
   )
 }

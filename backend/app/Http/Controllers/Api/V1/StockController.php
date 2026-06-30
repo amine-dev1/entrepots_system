@@ -17,6 +17,12 @@ class StockController extends Controller
     {
         $query = Stock::query()->with(['product.category', 'warehouse']);
 
+        // Périmètre de données : restreindre aux entrepôts autorisés.
+        $allowed = $request->user()->allowedWarehouseIds();
+        if ($allowed !== null) {
+            $query->whereIn('warehouse_id', $allowed);
+        }
+
         if ($request->filled('warehouse_id')) {
             $query->where('warehouse_id', $request->query('warehouse_id'));
         }
@@ -48,6 +54,11 @@ class StockController extends Controller
             ->whereHas('product', function ($q) {
                 $q->whereColumn('stocks.disponible', '<=', 'products.stock_minimum');
             });
+
+        $allowed = $request->user()->allowedWarehouseIds();
+        if ($allowed !== null) {
+            $query->whereIn('warehouse_id', $allowed);
+        }
 
         if ($request->filled('warehouse_id')) {
             $query->where('warehouse_id', $request->query('warehouse_id'));

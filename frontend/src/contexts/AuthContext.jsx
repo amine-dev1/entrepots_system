@@ -9,7 +9,17 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [roles, setRoles] = useState([])
   const [permissions, setPermissions] = useState([])
+  const [scopedWarehouses, setScopedWarehouses] = useState([]) // [] = accès à tous
+  const [warehouseScoped, setWarehouseScoped] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  const applyProfile = (data) => {
+    setUser(data.user)
+    setRoles(data.roles ?? [])
+    setPermissions(data.permissions ?? [])
+    setScopedWarehouses(data.warehouses ?? [])
+    setWarehouseScoped(!!data.warehouse_scoped)
+  }
 
   // Au démarrage : si un token est stocké, on restaure la session via /me.
   useEffect(() => {
@@ -20,11 +30,7 @@ export function AuthProvider({ children }) {
     }
     authApi
       .me()
-      .then((data) => {
-        setUser(data.user)
-        setRoles(data.roles ?? [])
-        setPermissions(data.permissions ?? [])
-      })
+      .then(applyProfile)
       .catch(() => localStorage.removeItem(TOKEN_KEY))
       .finally(() => setLoading(false))
   }, [])
@@ -32,11 +38,9 @@ export function AuthProvider({ children }) {
   const login = async (credentials) => {
     const data = await authApi.login(credentials)
     localStorage.setItem(TOKEN_KEY, data.token)
-    // On récupère le profil complet (rôles + permissions) via /me.
+    // On récupère le profil complet (rôles + permissions + périmètre) via /me.
     const profile = await authApi.me()
-    setUser(profile.user)
-    setRoles(profile.roles ?? [])
-    setPermissions(profile.permissions ?? [])
+    applyProfile(profile)
     return profile
   }
 
@@ -50,16 +54,27 @@ export function AuthProvider({ children }) {
     setUser(null)
     setRoles([])
     setPermissions([])
+    setScopedWarehouses([])
+    setWarehouseScoped(false)
   }
 
   const hasRole = (role) => roles.includes(role)
   const hasPermission = (perm) => permissions.includes(perm)
   const can = (perm) => hasRole('administrateur') || permissions.includes(perm)
 
+  // Filtre une liste d'entrepôts selon le périmètre de l'utilisateur.
+  const filterWarehouses = (list = []) => {
+    if (!warehouseScoped) return list
+    const ids = new Set(scopedWarehouses.map((w) => w.id))
+    return list.filter((w) => ids.has(w.id))
+  }
+
   const value = {
     user,
     roles,
     permissions,
+    scopedWarehouses,
+    warehouseScoped,
     loading,
     isAuthenticated: !!user,
     login,
@@ -67,6 +82,7 @@ export function AuthProvider({ children }) {
     hasRole,
     hasPermission,
     can,
+    filterWarehouses,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

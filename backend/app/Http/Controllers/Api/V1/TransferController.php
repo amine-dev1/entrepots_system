@@ -28,6 +28,15 @@ class TransferController extends Controller
     {
         $query = Transfer::query()->with(['sourceWarehouse', 'destWarehouse', 'items.product']);
 
+        // Périmètre de données : transferts impliquant un entrepôt autorisé (source OU destination).
+        $allowed = $request->user()->allowedWarehouseIds();
+        if ($allowed !== null) {
+            $query->where(function ($q) use ($allowed) {
+                $q->whereIn('source_warehouse_id', $allowed)
+                  ->orWhereIn('dest_warehouse_id', $allowed);
+            });
+        }
+
         if ($request->filled('statut')) {
             $query->where('statut', $request->query('statut'));
         }

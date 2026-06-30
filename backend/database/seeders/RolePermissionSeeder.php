@@ -17,6 +17,7 @@ class RolePermissionSeeder extends Seeder
         $permissions = [
             'manage-users',
             'manage-warehouses',
+            'manage-catalogue',
             'view-activity',
             'view-dashboard',
             'view-reports',
@@ -41,6 +42,7 @@ class RolePermissionSeeder extends Seeder
 
         $gestionnaire = Role::firstOrCreate(['name' => 'gestionnaire']);
         $gestionnaire->syncPermissions([
+            'manage-catalogue',
             'view-dashboard', 'view-reports', 'export',
             'transfers.validate', 'transfers.cancel',
             'inventories.create', 'inventories.adjust',

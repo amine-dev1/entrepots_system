@@ -8,6 +8,7 @@ import { ClipboardList, Plus, Eye, Search, Play } from 'lucide-react'
 import { formatDate } from '../../lib/utils'
 import { InventoryBadge } from '../../components/shared/Badges'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
 
 const INVENTORY_STATUSES = [
   { value: 'en_cours', label: 'En cours' },
@@ -16,6 +17,7 @@ const INVENTORY_STATUSES = [
 ]
 
 export default function InventoryListPage() {
+  const { filterWarehouses } = useAuth()
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [warehouses, setWarehouses] = useState([])
@@ -167,7 +169,7 @@ export default function InventoryListPage() {
             <Select
               value={form.warehouse_id}
               onChange={val => setForm({ ...form, warehouse_id: val })}
-              options={warehouses.map(w => ({ value: w.id, label: w.nom }))}
+              options={filterWarehouses(warehouses).map(w => ({ value: w.id, label: w.nom }))}
               placeholder="— Sélectionner —"
             />
             {errors.warehouse_id && <p className="text-red-500 text-xs mt-1">{errors.warehouse_id[0]}</p>}

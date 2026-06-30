@@ -8,6 +8,7 @@ import Modal from '../../components/shared/Modal'
 import Select from '../../components/shared/Select'
 import { TrendingUp, TrendingDown, Plus, AlertTriangle } from 'lucide-react'
 import { formatDateTime, cn } from '../../lib/utils'
+import { useAuth } from '../../contexts/AuthContext'
 
 const unwrap = (d) => (Array.isArray(d) ? d : d?.data || [])
 
@@ -29,6 +30,7 @@ const TYPE_LABEL = Object.fromEntries([...ENTREES, ...SORTIES].map((t) => [t.val
 const EMPTY = { type: 'achat', product_id: '', warehouse_id: '', quantite: '', motif: '' }
 
 export default function MovementsPage() {
+  const { filterWarehouses } = useAuth()
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [warehouses, setWarehouses] = useState([])
@@ -197,7 +199,7 @@ export default function MovementsPage() {
             <Select
               value={form.warehouse_id}
               onChange={val => setForm({ ...form, warehouse_id: val })}
-              options={warehouses.map(w => ({ value: w.id, label: w.nom }))}
+              options={filterWarehouses(warehouses).map(w => ({ value: w.id, label: w.nom }))}
               placeholder="— Sélectionner —"
             />
             {errors.warehouse_id && <p className="text-red-500 text-xs mt-1">{errors.warehouse_id[0]}</p>}

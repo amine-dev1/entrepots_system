@@ -17,6 +17,7 @@ import ActivityLogPage from './features/activity/ActivityLogPage'
 import ProductsPage from './features/products/ProductsPage'
 import StocksPage from './features/stocks/StocksPage'
 import MovementsPage from './features/movements/MovementsPage'
+import RolesPermissionsPage from './features/access/RolesPermissionsPage'
 
 function HomeRedirect() {
   const { roles } = useAuth()
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="warehouses"  element={<ProtectedRoute roles={['administrateur','gestionnaire']}><WarehousesPage /></ProtectedRoute>} />
           <Route path="categories"  element={<ProtectedRoute roles={['administrateur','gestionnaire']}><CategoriesPage /></ProtectedRoute>} />
           <Route path="users"       element={<ProtectedRoute roles={['administrateur']}><UsersPage /></ProtectedRoute>} />
+          <Route path="access"      element={<ProtectedRoute roles={['administrateur']}><RolesPermissionsPage /></ProtectedRoute>} />
           <Route path="products"    element={<ProtectedRoute roles={['administrateur','gestionnaire']}><ProductsPage /></ProtectedRoute>} />
           <Route path="stocks"      element={<ProtectedRoute roles={['administrateur','gestionnaire','magasinier']}><StocksPage /></ProtectedRoute>} />
           <Route path="movements"   element={<ProtectedRoute roles={['administrateur','magasinier']}><MovementsPage /></ProtectedRoute>} />

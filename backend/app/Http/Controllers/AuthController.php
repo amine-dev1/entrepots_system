@@ -71,9 +71,12 @@ class AuthController extends Controller
         $user = $request->user();
 
         return response()->json([
-            'user'        => $user,
-            'roles'       => $user->getRoleNames(),
-            'permissions' => $user->getAllPermissions()->pluck('name'),
+            'user'            => $user,
+            'roles'           => $user->getRoleNames(),
+            'permissions'     => $user->getAllPermissions()->pluck('name'),
+            // Périmètre de données : entrepôts autorisés (vide = accès à tous).
+            'warehouse_scoped' => $user->isWarehouseScoped(),
+            'warehouses'       => $user->warehouses()->get(['warehouses.id', 'warehouses.nom', 'warehouses.code']),
         ]);
     }
 }

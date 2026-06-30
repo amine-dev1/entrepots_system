@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AccessController;
 use App\Http\Controllers\Api\V1\ActivityLogController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\InventoryController;
@@ -47,19 +48,21 @@ Route::prefix('v1')->group(function () {
         Route::get('products',           [ProductController::class, 'index']);
         Route::get('products/{product}', [ProductController::class, 'show']);
 
-        Route::middleware('checkrole:administrateur')->group(function () {
+        Route::middleware('permission:manage-users')->group(function () {
             Route::get('users',                [UserController::class, 'index']);
             Route::post('users',               [UserController::class, 'store']);
             Route::put('users/{user}',         [UserController::class, 'update']);
             Route::get('users/{user}',         [UserController::class, 'show']);
             Route::post('users/{user}/toggle', [UserController::class, 'toggle']);
+        });
 
+        Route::middleware('permission:manage-warehouses')->group(function () {
             Route::post('warehouses',               [WarehouseController::class, 'store']);
             Route::put('warehouses/{warehouse}',    [WarehouseController::class, 'update']);
             Route::delete('warehouses/{warehouse}', [WarehouseController::class, 'destroy']);
         });
 
-        Route::middleware('checkrole:gestionnaire,administrateur')->group(function () {
+        Route::middleware('permission:manage-catalogue')->group(function () {
             Route::post('categories',              [CategoryController::class, 'store']);
             Route::put('categories/{category}',    [CategoryController::class, 'update']);
             Route::delete('categories/{category}', [CategoryController::class, 'destroy']);
@@ -67,6 +70,15 @@ Route::prefix('v1')->group(function () {
             Route::post('products',             [ProductController::class, 'store']);
             Route::post('products/{product}',   [ProductController::class, 'update']);
             Route::delete('products/{product}', [ProductController::class, 'destroy']);
+        });
+
+        // Contrôle d'accès (RBAC) — réservé à l'administrateur
+        Route::middleware('checkrole:administrateur')->group(function () {
+            Route::get('permissions',              [AccessController::class, 'permissions']);
+            Route::get('roles',                    [AccessController::class, 'roles']);
+            Route::put('roles/{role}',             [AccessController::class, 'updateRole']);
+            Route::get('users/{user}/access',      [AccessController::class, 'userAccess']);
+            Route::put('users/{user}/access',      [AccessController::class, 'updateUserAccess']);
         });
 
         /*
